@@ -1,0 +1,61 @@
+
+DEBUT(LANG='en',);
+
+### LOAD MESH ##
+
+MESH=LIRE_MAILLAGE(FORMAT='MED',);
+
+### MECHANICAL PROPERTIES ##
+
+MATPROP=DEFI_MATERIAU(ELAS=_F(E=None,
+                              NU=None,),);
+
+### DEFINE MODEL ## 
+
+MODEL=AFFE_MODELE(MAILLAGE=MESH,
+                  AFFE=_F(TOUT='OUI',
+                          PHENOMENE='MECANIQUE',
+                          MODELISATION=None,),);
+
+### ADD MATERIAL ##
+
+MATERIAL=AFFE_MATERIAU(MAILLAGE=MESH,
+                       AFFE=_F(MATER=None,),);
+
+### FIX BOUNDARY ##
+
+FIX=AFFE_CHAR_MECA(MODELE=MODEL,
+                   DDL_IMPO=_F(),);
+
+### LOADS BOUNDARIES ##
+
+LOAD=AFFE_CHAR_MECA(MODELE=MODEL,);
+
+### LINEAR MECHANICAL SOLVER ##
+
+RESU=MECA_STATIQUE(MODELE=MODEL,
+                   CHAM_MATER=MATERIAL,
+                   EXCIT=(_F(CHARGE=FIX,),
+                          _F(CHARGE=LOAD,),),);
+
+### FIELDS CALCULATION ##
+
+RESU=CALC_CHAMP(reuse =RESU,
+                RESULTAT=RESU,
+                CONTRAINTE=('SIGM_ELNO','SIGM_NOEU',),
+                CRITERES=('SIEQ_ELNO','SIEQ_NOEU',),);
+
+### PRINT RESULTS ##
+
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(RESULTAT=RESU,),);
+
+IMPR_RESU(FORMAT='RESULTAT',
+          MODELE=MODEL,
+          RESU=_F(RESULTAT=RESU,
+                  NOM_CHAM=('DEPL','SIEQ_NOEU',),
+                  VALE_MAX='OUI',
+                  VALE_MIN='OUI',),);
+
+FIN();
+#CHECKSUM:78db1408b0e0755125c3c62e39b0d46f  -:FIN CHECKSUM
