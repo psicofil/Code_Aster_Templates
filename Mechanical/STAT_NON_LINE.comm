@@ -1,60 +1,68 @@
+### START FEM MODEL (English)##
 
 DEBUT(LANG='en',);
-### LOAD MESH ##
 
+### LOAD MESH ##
 
 MESH=LIRE_MAILLAGE(FORMAT='MED',);
 
-MESH=MODI_MAILLAGE(reuse =MESH,
-                   MAILLAGE=MESH,
-                   ORIE_PEAU_3D=_F(GROUP_MA=None,),);
 ### MECHANICAL PROPERTIES ##
-
 
 MATPROP=DEFI_MATERIAU(ELAS=_F(E=None,
                               NU=None,),);
-### DEFINE MODEL ##
 
+### DEFINE MODEL ##
 
 MODEL=AFFE_MODELE(MAILLAGE=MESH,
                   AFFE=_F(TOUT='OUI',
                           PHENOMENE='MECANIQUE',
                           MODELISATION=None,),);
+                  
 ### ADD MATERIAL ##
-
 
 MATERIAL=AFFE_MATERIAU(MAILLAGE=MESH,
                        AFFE=_F(MATER=None,),);
+
+### FIX BOUNDARY ##
+
+FIX=AFFE_CHAR_MECA(MODELE=MODEL,
+                   DDL_IMPO=_F(),);
+
 ### LOAD STEP FUNCTION ##
 
 
 LSTEP=DEFI_FONCTION(
                     NOM_PARA='INST',
                     VALE=(0.0 ,0.0 ,
-                          1.0 ,1.0 ,),);
-### FIX BOUNDARY ##
+                          1.0 ,1.0 ,),
+                    PROL_DROITE='CONSTANT',
+                    PROL_GAUCHE='CONSTANT',);
 
-
-FIX=AFFE_CHAR_MECA(MODELE=MODEL,
-                   DDL_IMPO=_F(),);
 ### LOADS BOUNDARIES ##
 
-
 LOAD=AFFE_CHAR_MECA(MODELE=MODEL,);
-### CALCULATION STEPS ##
+
+### USER CALCULATION STEPS ##
 
 
-STEPS=DEFI_LIST_REEL(DEBUT=0.0,
-                     INTERVALLE=_F(JUSQU_A=1.0,
-                                   PAS=0.1,),);
-### LINEAR MECHANICAL SOLVER ##
+USTEPS=DEFI_LIST_REEL(DEBUT=0.0,
+                      INTERVALLE=_F(JUSQU_A=1.0,
+                                    PAS=1.0,),);
+
+## SYSTEM CALCULATION STEPS ##
+
+SSTEPS=DEFI_LIST_INST(DEFI_LIST=_F(METHODE='AUTO',
+                                   LIST_INST=USTEPS,),);
+### NO LINEAR MECHANICAL SOLVER ##
 
 
 RESU=STAT_NON_LINE(MODELE=MODEL,
                    CHAM_MATER=MATERIAL,
-                   EXCIT=_F(CHARGE=FIX,
-                            TYPE_CHARGE='FIXE_PILO',),
-                   INCREMENT=_F(LIST_INST=STEPS,),);
+                   EXCIT=(_F(CHARGE=FIX,),
+                          _F(CHARGE=LOAD,),),
+                   INCREMENT=_F(LIST_INST=SSTEPS,),
+                   NEWTON=_F(REAC_ITER=1,),);
+                   
 ### FIELDS CALCULATION ##
 
 
@@ -62,7 +70,8 @@ RESU=CALC_CHAMP(reuse =RESU,
                 RESULTAT=RESU,
                 CONTRAINTE=('SIGM_ELNO','SIGM_NOEU',),
                 CRITERES=('SIEQ_ELNO','SIEQ_NOEU',),);
-### PRINT RESULTS ##
+
+### PRINT RESULTS IN MED AND RESU FORMATS##
 
 
 IMPR_RESU(FORMAT='MED',
@@ -74,6 +83,6 @@ IMPR_RESU(FORMAT='RESULTAT',
                   NOM_CHAM=('DEPL','SIEQ_NOEU',),
                   VALE_MAX='OUI',
                   VALE_MIN='OUI',),);
-
+          
+### END FEM MODEL (English)##
 FIN();
-#CHECKSUM:b815c0fb95cd74d69f15ca946166b61d  -:FIN CHECKSUM

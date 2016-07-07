@@ -1,0 +1,10 @@
+#Simple_Mechanical_Post.comm
+
+POURSUITE();
+
+IMPR_RESU( FORMAT = 'MED',
+          RESU = _F( MAILLAGE = MESH,
+                  RESULTAT = Result,
+                  NOM_CHAM = ( 'SIGM_ELNO','DEPL')));
+                  
+FIN();
