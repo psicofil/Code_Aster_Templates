@@ -2,9 +2,26 @@
 
 POURSUITE();
 
-IMPR_RESU( FORMAT = 'MED',
-          RESU = _F( MAILLAGE = MESH,
-                  RESULTAT = Result,
-                  NOM_CHAM = ( 'SIGM_ELNO','DEPL')));
+### FIELDS CALCULATION ##
+
+RESU=CALC_CHAMP(reuse =RESU,
+                RESULTAT=RESU,
+                CONTRAINTE=('SIGM_ELNO','SIGM_NOEU',),
+                CRITERES=('SIEQ_ELNO','SIEQ_NOEU',),);
+
+### PRINT RESULTS IN MED AND RESU FORMATS##
+
+
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(RESULTAT=RESU,
+		  NOM_CHAM = ('SIEQ_ELNO','SIGM_ELNO','DEPL'),
+		  ),);
+
+IMPR_RESU(FORMAT='RESULTAT',
+          MODELE=MODEL,
+          RESU=_F(RESULTAT=RESU,
+                  NOM_CHAM=('DEPL','SIEQ_NOEU',),
+                  VALE_MAX='OUI',
+                  VALE_MIN='OUI',),);
                   
 FIN();
